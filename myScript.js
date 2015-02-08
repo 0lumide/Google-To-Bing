@@ -100,7 +100,7 @@ function create_button(site_name, link){
 			windowWidth = $(window).width();
 			right = windowWidth - (buttonSize + ui.position.left);
 			bottom = windowHeight - (buttonSize + ui.position.top);
-			chrome.storage.local.set({"bottom": bottom, "right": right},null);
+			chrome.storage.sync.set({"bottom": bottom, "right": right},null);
 		},
 		containment: "window",
 		distance: 10
@@ -109,7 +109,7 @@ function create_button(site_name, link){
 	mylink.setAttribute("href", link);
 	document.body.appendChild(mylink);
 	keys = ["bottom", "right"];
-	chrome.storage.local.get(keys, function(result){
+	chrome.storage.sync.get(keys, function(result){
 		$("#clickme div").css("right",result.right);
 		$("#clickme div").css("bottom",result.bottom);
 		$("#clickme").show();
@@ -125,6 +125,20 @@ var buttonSize = 45;
 var cssProp = '-webkit-box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); background-size:100%; width:'+buttonSize+'px; height:'+buttonSize+'px; position:fixed; right:2px; bottom:2px; z-index:999999999; cursor:pointer;';
 var linkDest = start_script();
 
+window.onresize = function(e){
+	if(document.getElementById("bingtogoogle")){
+		keys = ["bottom", "right"];
+        	chrome.storage.sync.get(keys, function(result){
+                	$("#clickme div").css("right",result.right);
+               		$("#clickme div").css("bottom",result.bottom);
+                        $("#clickme div").css("left", "auto");
+                        $("#clickme div").css("top", "auto");
+
+			console.log("poop");
+			console.log(JSON.stringify(result));
+       		});
+	}
+}
 
 window.onhashchange = function(e){
     e = e || window.event;
