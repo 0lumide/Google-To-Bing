@@ -94,15 +94,26 @@ function create_button(site_name, link){
 	var mylink = document.createElement('a');
 	mylink.appendChild(mydiv);
 	mylink.setAttribute("id", "clickme");
+	$(mydiv).draggable({
+		stop: function( event, ui ) {
+			windowHeight = $(window).height();
+			windowWidth = $(window).width();
+			right = windowWidth - (buttonSize + ui.position.left);
+			bottom = windowHeight - (buttonSize + ui.position.top);
+			chrome.storage.local.set({"bottom": bottom, "right": right},null);
+		},
+		containment: "window",
+		distance: 10
+	});
+	$(mylink).hide();
 	mylink.setAttribute("href", link);
 	document.body.appendChild(mylink);
-/*
-	var clickedme = document.getElementById("clickme");
-	clickedme.addEventListener("click", 
-		function() {
-			location.href=linkDest;
-		}, false);
-*/
+	keys = ["bottom", "right"];
+	chrome.storage.local.get(keys, function(result){
+		$("#clickme div").css("right",result.right);
+		$("#clickme div").css("bottom",result.bottom);
+		$("#clickme").show();
+	});
 }
 
 function updateLink(link){
@@ -110,7 +121,8 @@ function updateLink(link){
 	clickme.setAttribute("href", link);
 }
 
-var cssProp = '-webkit-box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); background-size:100%; width:45px; height:45px; position:fixed; right:2px; bottom:2px; z-index:999999999; cursor:pointer;';
+var buttonSize = 45;
+var cssProp = '-webkit-box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); background-size:100%; width:'+buttonSize+'px; height:'+buttonSize+'px; position:fixed; right:2px; bottom:2px; z-index:999999999; cursor:pointer;';
 var linkDest = start_script();
 
 

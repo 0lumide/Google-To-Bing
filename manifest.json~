@@ -16,7 +16,6 @@
       "16": "icon16.png",
       "48": "icon48.png"
    },
-   "permissions": ["storage"],
    "manifest_version": 2,
    "name": "Google to Bing",
    "version": "0.0.2.0",
