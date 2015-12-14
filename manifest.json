@@ -25,6 +25,6 @@
   ],
    "manifest_version": 2,
    "name": "Google to Bing",
-   "version": "0.0.2.4",
+   "version": "0.0.2.5",
    "default_locale": "en"
 }
