@@ -26,7 +26,7 @@ function issearchorimage(){
 	searchType = null;
 	site = whichSite();
 	if(site !== null){
-		if(((document.URL.indexOf("/search") !== -1)||(document.URL.indexOf("/#") !== -1)||(document.URL.indexOf("#newwindow") !== -1)) && (getParameter("q")!=="")){
+		if(((document.URL.indexOf("/webhp") !== -1)||(document.URL.indexOf("/search") !== -1)||(document.URL.indexOf("/#") !== -1)||(document.URL.indexOf("#newwindow") !== -1)) && (getParameter("q")!=="")){
 			if ((site == "bing")&&(document.URL.indexOf("/images/")!==-1)){
 				searchType = "image"
 			}
@@ -45,9 +45,11 @@ function issearchorimage(){
 }
 
 function start_script(){
+	console.log("start script");
 	link = null;
 	data = issearchorimage();
 	destDomain = "bing";
+	query = getParameter("q");
 	if (data[1] !== null){
 		site_name = data[0];
 		searchType = data[1];
@@ -59,14 +61,14 @@ function start_script(){
 			destDomain = "google";
 		}
 		if(searchType == "web"){
-			link = "//www."+destDomain+".com/search?q="+getParameter("q");
+			link = "//www."+destDomain+".com/search?q="+query;
 		}
 		else if(searchType == "image"){
 			if(site_name == "google"){
-				link = "//www.bing.com/images/search?q="+getParameter("q");
+				link = "//www.bing.com/images/search?q="+query;
 			}
 			else if(site_name == "bing"){
-				link = "//www.google.com/search?q="+getParameter("q")+"&tbm=isch";
+				link = "//www.google.com/search?q="+query+"&tbm=isch";
 			}
 		}
 	}
@@ -121,6 +123,7 @@ function updateLink(link){
 	clickme.setAttribute("href", link);
 }
 
+var query;
 var buttonSize = 45;
 var cssProp = '-webkit-box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); background-size:100%; width:'+buttonSize+'px; height:'+buttonSize+'px; position:fixed; right:2px; bottom:2px; z-index:999999999; cursor:pointer;';
 var linkDest = start_script();
@@ -133,9 +136,6 @@ window.onresize = function(e){
                		$("#clickme div").css("bottom",result.bottom);
                         $("#clickme div").css("left", "auto");
                         $("#clickme div").css("top", "auto");
-
-			console.log("poop");
-			console.log(JSON.stringify(result));
        		});
 	}
 }
@@ -144,3 +144,7 @@ window.onhashchange = function(e){
     e = e || window.event;
     linkDest = start_script();
 }
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+    linkDest = start_script();
+});
