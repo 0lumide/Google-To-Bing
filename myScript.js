@@ -1,5 +1,4 @@
-function getParameter(name)
-{
+function getParameter(name){
 	hashornot = window.location.search;
 	if(document.URL.indexOf("#")!==-1){hashornot=window.location.hash.replace("#","#hold=1&");}
 	name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -12,42 +11,32 @@ function getParameter(name)
 		return results[1];
 }
 
-function whichSite() 
-{
+function whichSite(){
 	sEngine = null;
-	if (location.hostname.indexOf(".google.")!==-1)
-	{
+	if (location.hostname.indexOf(".google.")!==-1){
 		sEngine = "google";
 	}
-	else if (location.hostname.indexOf(".bing.com")!==-1)
-	{
+	else if (location.hostname.indexOf(".bing.com")!==-1){
 		sEngine = "bing";
 	}
 	return(sEngine);
 }
 
-function issearchorimage()
-{
+function issearchorimage(){
 	searchType = null;
 	site = whichSite();
-	if(site !== null)
-	{
-		if(((document.URL.indexOf("/webhp") !== -1)||(document.URL.indexOf("/search") !== -1)||(document.URL.indexOf("/#") !== -1)||(document.URL.indexOf("#newwindow") !== -1)) && (getParameter("q")!==""))
-		{
-			if ((site == "bing")&&(document.URL.indexOf("/images/")!==-1))
-			{
+	if(site !== null){
+		if(((document.URL.indexOf("/webhp") !== -1)||(document.URL.indexOf("/search") !== -1)||(document.URL.indexOf("/#") !== -1)||(document.URL.indexOf("#newwindow") !== -1)) && (getParameter("q")!=="")){
+			if ((site == "bing")&&(document.URL.indexOf("/images/")!==-1)){
 				searchType = "image"
 			}
-			else if ((site=="bing")&&(document.URL.indexOf(".com/search")!==-1))
-			{
+			else if ((site=="bing")&&(document.URL.indexOf(".com/search")!==-1)){
 				searchType = "web";
 			}
-			else if ((site=="google")&&(getParameter("tbm")=="isch"))
-			{
+			else if ((site=="google")&&(getParameter("tbm")=="isch")){
 				searchType = "image";
 			}
-			else if ((site=="google")&&(getParameter("tbm")==""))
-			{
+			else if ((site=="google")&&(getParameter("tbm")=="")){
 				searchType = "web";
 			}
 		}
@@ -55,39 +44,30 @@ function issearchorimage()
 	return([site, searchType]);
 }
 
-function buildDestinationLink() 
-{
+function buildDestinationLink(){
 	var link = null;
 		data = issearchorimage();
 		destDomain = "bing";
 		query = getParameter("q");
 		site_name = data[0];
 		searchType = data[1];
-	if (searchType !== null)
-	{
-		if (site_name == "google")
-		{
+	if (searchType !== null){
+		if (site_name == "google"){
 			img_link = chrome.extension.getURL("g2b.png");
 			contextMenuTitle = "Search with Bing";
 		}
-		else if (site_name=="bing")
-		{
+		else if (site_name=="bing"){
 			img_link = chrome.extension.getURL("b2g.png");
 			destDomain = "google";
 		}
-
-		if(searchType == "web")
-		{
+		if(searchType == "web"){
 			link = "https://www."+destDomain+".com/search?q="+query;
 		}
-		else if(searchType == "image")
-		{
-			if(site_name == "google")
-			{
+		else if(searchType == "image"){
+			if(site_name == "google"){
 				link = "https://www.bing.com/images/search?q="+query;
 			}
-			else if(site_name == "bing")
-			{
+			else if(site_name == "bing"){
 				link = "https://www.google.com/search?q="+query+"&tbm=isch";
 			}
 		}
@@ -95,27 +75,21 @@ function buildDestinationLink()
 	return link;
 }
 
-function start_script()
-{
+function start_script(){
 	console.log("start script");
 	var destinationLink = buildDestinationLink();
 		contextMenuTitle = whichSite() == "bing" ? "Search with Google" : "Search with Bing";
 		dummyOptions = {"contextMenu" : true, "button" : false};
 		
-	if(destinationLink != null)
-	{
-		if(dummyOptions.contextMenu)
-		{
+	if(destinationLink != null){
+		if(dummyOptions.contextMenu){
 			chrome.runtime.sendMessage({"title":contextMenuTitle});
 		}
-		if(dummyOptions.button)
-		{
-			if(!document.getElementById("bingtogoogle"))
-			{
+		if(dummyOptions.button){
+			if(!document.getElementById("bingtogoogle")){
 				create_button(data[0], destinationLink);
 			}
-			else
-			{
+			else{
 				updateLink(destinationLink);
 			}
 		}
@@ -183,13 +157,11 @@ window.onhashchange = function(e){
     start_script();
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if(request.event == "tab Updated" || request.event == "historyChange")
-    {
-    	start_script();
-    }
-    else if(request.event == "contextMenuAction")
-    {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+    if(request.event == "contextMenuAction"){
 		sendResponse({"url":buildDestinationLink()});
+    }
+    else{
+    	start_script();
     }
 });
