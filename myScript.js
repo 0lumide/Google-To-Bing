@@ -11,7 +11,7 @@ function getParameter(name){
 		return results[1];
 }
 
-function whichSite() {
+function whichSite(){
 	sEngine = null;
 	if (location.hostname.indexOf(".google.")!==-1){
 		sEngine = "google";
@@ -44,43 +44,56 @@ function issearchorimage(){
 	return([site, searchType]);
 }
 
-function start_script(){
-	console.log("start script");
-	link = null;
-	data = issearchorimage();
-	destDomain = "bing";
-	query = getParameter("q");
-	if (data[1] !== null){
+function buildDestinationLink(){
+	var link = null;
+		data = issearchorimage();
+		destDomain = "bing";
+		query = getParameter("q");
 		site_name = data[0];
 		searchType = data[1];
+	if (searchType !== null){
 		if (site_name == "google"){
 			img_link = chrome.extension.getURL("g2b.png");
+			contextMenuTitle = "Search with Bing";
 		}
 		else if (site_name=="bing"){
 			img_link = chrome.extension.getURL("b2g.png");
 			destDomain = "google";
 		}
 		if(searchType == "web"){
-			link = "//www."+destDomain+".com/search?q="+query;
+			link = "https://www."+destDomain+".com/search?q="+query;
 		}
 		else if(searchType == "image"){
 			if(site_name == "google"){
-				link = "//www.bing.com/images/search?q="+query;
+				link = "https://www.bing.com/images/search?q="+query;
 			}
 			else if(site_name == "bing"){
-				link = "//www.google.com/search?q="+query+"&tbm=isch";
+				link = "https://www.google.com/search?q="+query+"&tbm=isch";
 			}
 		}
 	}
-	if(link != null){
-		if(!document.getElementById("bingtogoogle")){
-			create_button(data[0], link);
+	return link;
+}
+
+function start_script(){
+	console.log("start script");
+	var destinationLink = buildDestinationLink();
+		contextMenuTitle = whichSite() == "bing" ? "Search with Google" : "Search with Bing";
+		dummyOptions = {"contextMenu" : true, "button" : false};
+		
+	if(destinationLink != null){
+		if(dummyOptions.contextMenu){
+			chrome.runtime.sendMessage({"title":contextMenuTitle});
 		}
-		else{
-			updateLink(link);
+		if(dummyOptions.button){
+			if(!document.getElementById("bingtogoogle")){
+				create_button(data[0], destinationLink);
+			}
+			else{
+				updateLink(destinationLink);
+			}
 		}
 	}
-	return(link);
 }
 
 function create_button(site_name, link){
@@ -126,7 +139,6 @@ function updateLink(link){
 var query;
 var buttonSize = 45;
 var cssProp = '-webkit-box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); box-shadow: 0px -1px 7px rgba(50, 50, 50, 0.75); background-size:100%; width:'+buttonSize+'px; height:'+buttonSize+'px; position:fixed; right:2px; bottom:2px; z-index:999999999; cursor:pointer;';
-var linkDest = start_script();
 
 window.onresize = function(e){
 	if(document.getElementById("bingtogoogle")){
@@ -142,9 +154,14 @@ window.onresize = function(e){
 
 window.onhashchange = function(e){
     e = e || window.event;
-    linkDest = start_script();
+    start_script();
 }
 
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    linkDest = start_script();
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse){
+    if(request.event == "contextMenuAction"){
+		sendResponse({"url":buildDestinationLink()});
+    }
+    else{
+    	start_script();
+    }
 });
